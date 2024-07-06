@@ -1,0 +1,40 @@
+{
+  "name": "@grinstead/webgpu",
+  "version": "0.0.1",
+  "license": "LGPL-2.1-only",
+  "homepage": "https://github.com/grinstead/webgpu#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/grinstead/webgpu.git"
+  },
+  "bugs": "https://github.com/grinstead/webgpu/issues",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/webgpu.umd.cjs",
+  "module": "./dist/webgpu.js",
+  "types": "./dist/webgpu.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/webgpu.js",
+      "require": "./dist/webgpu.umd.cjs"
+    }
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "prepublishOnly": "bun run build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "solid-js": "^1.8.15"
+  },
+  "devDependencies": {
+    "@webgpu/types": "^0.1.40",
+    "typescript": "^5.2.2",
+    "vite": "^5.2.0",
+    "vite-plugin-dts": "^3.9.1",
+    "vite-plugin-solid": "^2.10.2"
+  }
+}
