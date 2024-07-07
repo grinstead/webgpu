@@ -49,7 +49,7 @@ export class GPULoadError extends Error {
 }
 
 export function GPUContainer(props: GPUContainerProps) {
-  const [result, setResult] =
+  const [getResult, setResult] =
     createSignal<Result<GPUDetails, GPULoadErrorCode>>();
 
   let loadId = 0;
@@ -68,10 +68,9 @@ export function GPUContainer(props: GPUContainerProps) {
   });
 
   return (
-    <Show when={result()} fallback={props.fallback}>
+    <Show when={getResult()} keyed fallback={props.fallback}>
       {(result) => {
-        const item = result();
-        const { failure } = item;
+        const { failure } = result;
 
         if (failure != null) {
           const handler = props.failure;
@@ -85,7 +84,7 @@ export function GPUContainer(props: GPUContainerProps) {
         }
 
         return (
-          <GPUContext.Provider value={item.value}>
+          <GPUContext.Provider value={result.value}>
             {props.children}
           </GPUContext.Provider>
         );
