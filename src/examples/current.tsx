@@ -1,11 +1,25 @@
 import { ErrorBoundary } from "solid-js";
-import {
-  GPUContainer,
-  GPULoadError,
-  GPU_LOAD_ERROR,
-} from "../GPUContainer.tsx";
+import { GPUContainer } from "../GPUContainer.tsx";
+import { RenderQueue } from "../RenderQueue.tsx";
 
-export default function App() {
+export function Playground() {
+  const canvas = (<canvas width={320} height={240} />) as HTMLCanvasElement;
+
+  let render: undefined | RenderQueue;
+
+  return (
+    <ErrorBoundary fallback={(e) => <div>{String(e)}</div>}>
+      {canvas}
+      <GPUContainer canvas={canvas} fallback={"Loading..."}>
+        <RenderQueue.Provider ref={render}>
+          <div>Loaded!</div>
+        </RenderQueue.Provider>
+      </GPUContainer>
+    </ErrorBoundary>
+  );
+}
+
+export function BasicError() {
   const canvas = (<canvas width={320} height={240} />) as HTMLCanvasElement;
 
   return (
@@ -17,3 +31,5 @@ export default function App() {
     </ErrorBoundary>
   );
 }
+
+export default Playground;
