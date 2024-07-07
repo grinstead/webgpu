@@ -27,7 +27,7 @@ export const GPU_LOAD_ERROR = {
   [E_GPU_NOWEBGPU]: "Failed to initialize",
 } as const;
 
-export type GpuLoadError = keyof typeof GPU_LOAD_ERROR;
+export type GPULoadErrorCode = keyof typeof GPU_LOAD_ERROR;
 
 export const GPUContext = createContext(
   // tricks it into typing the context as always being defined
@@ -37,12 +37,20 @@ export const GPUContext = createContext(
 export type GPUContainerProps = LoadGPUOptions & {
   canvas: HTMLCanvasElement;
   fallback?: JSXElement;
-  failure?: (error: GpuLoadError) => JSXElement;
+  failure?: (error: GPULoadErrorCode) => JSXElement;
   children: JSXElement;
 };
 
+export class GPULoadError extends Error {
+  constructor(readonly code: GPULoadErrorCode) {
+    super(GPU_LOAD_ERROR[code]);
+    this.name = "GPULoadError";
+  }
+}
+
 export function GPUContainer(props: GPUContainerProps) {
-  const [result, setResult] = createSignal<Result<GPUDetails, GpuLoadError>>();
+  const [result, setResult] =
+    createSignal<Result<GPUDetails, GPULoadErrorCode>>();
 
   let loadId = 0;
   createComputed(() => {
@@ -70,7 +78,7 @@ export function GPUContainer(props: GPUContainerProps) {
 
           if (!handler) {
             // hopefully they have an error boundary
-            throw new Error(`WebGPULoadError: ${GPU_LOAD_ERROR[failure]}`);
+            throw new GPULoadError(failure);
           }
 
           return handler(failure);
@@ -94,17 +102,17 @@ export type LoadGPUOptions = {
 export async function loadGPU(
   canvas: HTMLCanvasElement,
   options?: LoadGPUOptions
-): Promise<Result<GPUDetails, GpuLoadError>> {
+): Promise<Result<GPUDetails, GPULoadErrorCode>> {
   const { gpu } = navigator as Partial<NavigatorGPU>;
-  if (!gpu) return failure<GpuLoadError>(E_GPU_NOSUPPORT);
+  if (!gpu) return failure<GPULoadErrorCode>(E_GPU_NOSUPPORT);
 
   const adapter = await gpu.requestAdapter(options?.adapter);
-  if (!adapter) return failure<GpuLoadError>(E_GPU_NOHARDWARE);
+  if (!adapter) return failure<GPULoadErrorCode>(E_GPU_NOHARDWARE);
 
   const device = await adapter.requestDevice(options?.device);
 
   const context = canvas.getContext("webgpu");
-  if (!context) return failure<GpuLoadError>(E_GPU_NOWEBGPU);
+  if (!context) return failure<GPULoadErrorCode>(E_GPU_NOWEBGPU);
 
   const format = gpu.getPreferredCanvasFormat();
 
