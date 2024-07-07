@@ -8,8 +8,8 @@ export default defineConfig({
   build: {
     lib: {
       entry: "src/exports.ts",
-      name: "Ambush",
-      fileName: "ambush",
+      name: "WebGPU",
+      fileName: "webgpu",
     },
     rollupOptions: {
       external: ["solid-js"],
