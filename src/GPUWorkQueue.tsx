@@ -30,6 +30,7 @@ type GPUWorkWrapper = {
 
 export type GPUWorkQueueProviderProps = {
   ref?: GPUWorkQueue | ((render: GPUWorkQueue) => void);
+  onHasWork?: () => void;
   children: JSXElement;
 };
 
@@ -58,6 +59,9 @@ export class GPUWorkQueue {
 
   private readonly pipelines: Map<PipelineId, PipelineData> = new Map();
 
+  hasWork: boolean = false;
+  onHasWork: undefined | (() => void) = undefined;
+
   private nextWorkId = 1;
 
   static Provider(props: GPUWorkQueueProviderProps) {
@@ -65,6 +69,10 @@ export class GPUWorkQueue {
 
     createComputed(() => {
       (props.ref as undefined | ((render: GPUWorkQueue) => void))?.(manager);
+    });
+
+    createComputed(() => {
+      manager.onHasWork = props.onHasWork;
     });
 
     return (
@@ -88,6 +96,7 @@ export class GPUWorkQueue {
         work.func = update;
         (everyFrame ? persistentWork : oneTimeWork).set(id, work);
         (everyFrame ? oneTimeWork : persistentWork).delete(id);
+        this._markWork();
       } else {
         oneTimeWork.delete(id);
         persistentWork.delete(id);
@@ -133,7 +142,15 @@ export class GPUWorkQueue {
 
       binding.resource = resource;
       group.compiled = undefined;
+      this._markWork();
     };
+  }
+
+  private _markWork() {
+    if (!this.hasWork) {
+      this.hasWork = true;
+      this.onHasWork?.();
+    }
   }
 
   forEachBindGroup(
@@ -180,11 +197,8 @@ export class GPUWorkQueue {
     });
   }
 
-  hasWork() {
-    return !!(this.persistentWork.size || this.oneTimeWork.size);
-  }
-
   runQueued() {
+    this.hasWork = false;
     const { oneTimeWork } = this;
 
     const renders = [...this.persistentWork.values(), ...oneTimeWork.values()];
