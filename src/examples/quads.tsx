@@ -80,7 +80,7 @@ fn vertexMain(@builtin(vertex_index) index: u32) -> Vertex {
   );
 }
 
-@group(0) @binding(1) var<uniform> red: f32;
+@group(0) @binding(0) var<uniform> red: f32;
 
 @fragment
 fn fragmentMain(@location(0) uv: vec2f) -> @location(0) vec4f {
@@ -89,7 +89,7 @@ fn fragmentMain(@location(0) uv: vec2f) -> @location(0) vec4f {
 
 `}
       />
-      <ScalarBinding group={0} id={1} value={red()} />
+      <ScalarBinding group={0} id={0} value={red()} />
     </Canvas>
   );
 }

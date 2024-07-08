@@ -2,10 +2,32 @@ import { JSX, createSignal, onCleanup, onMount } from "solid-js";
 import { GPUContainer } from "./GPUContainer.tsx";
 import { GPUWorkQueue } from "./GPUWorkQueue.tsx";
 
+/**
+ * Props for the Canvas component.
+ */
 export type CanvasProps = JSX.CanvasHTMLAttributes<HTMLCanvasElement>;
 
 /**
- * The simplest possible way to render a WebGPU Canvas
+ * The simplest possible way to render a WebGPU Canvas.
+ * This component creates a canvas element and initializes WebGPU.
+ * It handles the device pixel ratio for high-DPI displays.
+ *
+ * @param props - The properties for the Canvas component.
+ * @returns A SolidJS component that wraps a canvas element with WebGPU initialization.
+ *
+ * @example
+ * ```typescript
+ * import { Canvas } from "@grinstead/webgpu";
+ *
+ * export function ExampleCanvas() {
+ *   return (
+ *     <Canvas width={800} height={600}>
+ *       ...WebGPU components can go here...
+ *       <RenderPipeline />
+ *     </Canvas>
+ *   );
+ * }
+ * ```
  */
 export function Canvas(props: CanvasProps) {
   const [computed, setComputed] = createSignal<{

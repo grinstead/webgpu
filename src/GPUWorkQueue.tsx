@@ -10,36 +10,69 @@ import {
 } from "solid-js";
 import { GPUContext, GPUDetails } from "./GPUContainer.tsx";
 
+/**
+ * A unique identifier for a pipeline.
+ */
 export type PipelineId = string | undefined;
+
+/**
+ * A unique identifier for a binding within a pipeline.
+ */
 export type BindingId = {
   pipeline?: PipelineId;
   group: number;
   id: GPUIndex32;
 };
 
+/**
+ * A function that performs work with a GPUCommandEncoder.
+ */
 export type GPUWork = (encoder: GPUCommandEncoder) => void;
+
+/**
+ * A function that updates the work to be performed, optionally on every frame.
+ */
 export type UpdateWork = (update: null | GPUWork, everyFrame?: boolean) => void;
+
+/**
+ * A function that updates a binding resource.
+ */
 export type UpdateBinding = (resource: null | GPUBindingResource) => void;
 
+/**
+ * Context for the GPUWorkQueue.
+ */
 export const GPUWorkQueueContext = createContext<GPUWorkQueue>();
 
-type GPUWorkWrapper = {
-  id: number;
-  func: GPUWork;
-};
-
+/**
+ * Props for the GPUWorkQueueProvider.
+ */
 export type GPUWorkQueueProviderProps = {
   ref?: GPUWorkQueue | ((render: GPUWorkQueue) => void);
   onHasWork?: () => void;
   children: JSXElement;
 };
 
+/**
+ * Internal type to wrap GPU work with an identifier.
+ */
+type GPUWorkWrapper = {
+  id: number;
+  func: GPUWork;
+};
+
+/**
+ * Internal type to store data about a binding.
+ */
 type BindingData = {
   id: GPUIndex32;
   dropped: boolean;
   resource: null | GPUBindingResource;
 };
 
+/**
+ * Internal type to store data about a bind group.
+ */
 type BindGroupData = {
   id: number;
   dropped: boolean;
@@ -47,21 +80,24 @@ type BindGroupData = {
   bindings: Map<number, BindingData>;
 };
 
+/**
+ * Internal type to store data about a pipeline.
+ */
 type PipelineData = {
   id: PipelineId;
   dropped: boolean;
   groups: Map<number, BindGroupData>;
 };
 
+/**
+ * Class to manage GPU work queues, including persistent and one-time work.
+ */
 export class GPUWorkQueue {
   private readonly persistentWork: Map<number, GPUWorkWrapper> = new Map();
   private readonly oneTimeWork: Map<number, GPUWorkWrapper> = new Map();
-
   private readonly pipelines: Map<PipelineId, PipelineData> = new Map();
-
   hasWork: boolean = false;
   onHasWork: undefined | (() => void) = undefined;
-
   private nextWorkId = 1;
 
   static Provider(props: GPUWorkQueueProviderProps) {
@@ -84,9 +120,12 @@ export class GPUWorkQueue {
 
   constructor(readonly gpu: GPUDetails) {}
 
+  /**
+   * Reserves a slot for GPU work, allowing it to be updated.
+   * @returns A function to update the work to be performed.
+   */
   reserveSlot(): UpdateWork {
     const id = this.nextWorkId++;
-
     const work: GPUWorkWrapper = { id, func: noop };
 
     return (update, everyFrame = false) => {
@@ -104,6 +143,13 @@ export class GPUWorkQueue {
     };
   }
 
+  /**
+   * Creates a binding for a specific pipeline, group, and id.
+   * @param pipelineId - The pipeline ID.
+   * @param groupId - The group ID.
+   * @param id - The binding ID.
+   * @returns A function to update the binding resource.
+   */
   makeBinding(pipelineId: PipelineId, groupId: number, id: GPUIndex32) {
     let pipeline = this.pipelines.get(pipelineId);
     if (!pipeline) {
@@ -153,6 +199,12 @@ export class GPUWorkQueue {
     }
   }
 
+  /**
+   * Iterates over each bind group for a pipeline, applying a function to each.
+   * @param pipelineId - The pipeline ID.
+   * @param pipeline - The pipeline object.
+   * @param map - The function to apply to each bind group.
+   */
   forEachBindGroup(
     pipelineId: PipelineId,
     pipeline: GPUPipelineBase,
@@ -197,6 +249,9 @@ export class GPUWorkQueue {
     });
   }
 
+  /**
+   * Runs all queued GPU work.
+   */
   runQueued() {
     this.hasWork = false;
     const { oneTimeWork } = this;
@@ -221,11 +276,23 @@ export class GPUWorkQueue {
   }
 }
 
+/**
+ * A no-operation function.
+ */
 function noop() {}
 
 /**
  * Add code to call whenever the system renders.
  * @param code The code to render, dependencies are tracked
+ *
+ * @example
+ * ```typescript
+ * import { createGPURender } from "@grinstead/webgpu";
+ *
+ * createGPURender(() => (encoder) => {
+ *   // GPU rendering commands go here
+ * });
+ * ```
  */
 export function createGPURender(code: Accessor<GPUWork>) {
   const update = useContext(GPUWorkQueueContext)!.reserveSlot();
@@ -242,6 +309,15 @@ export function createGPURender(code: Accessor<GPUWork>) {
 /**
  * Add code to write to the GPU whenever the dependencies change.
  * @param code The code to render, dependencies are tracked
+ *
+ * @example
+ * ```typescript
+ * import { createGPUWrite } from "@grinstead/webgpu";
+ *
+ * createGPUWrite(() => (encoder) => {
+ *   // GPU write commands go here
+ * });
+ * ```
  */
 export function createGPUWrite(code: Accessor<GPUWork>) {
   const update = useContext(GPUWorkQueueContext)!.reserveSlot();
@@ -255,6 +331,19 @@ export function createGPUWrite(code: Accessor<GPUWork>) {
   });
 }
 
+/**
+ * Creates a binding for a given pipeline, group, and ID.
+ * @param props - The binding ID properties.
+ * @returns A function to update the binding resource.
+ *
+ * @example
+ * ```typescript
+ * import { createBinding } from "@grinstead/webgpu";
+ *
+ * const updateBinding = createBinding({ pipeline: "examplePipeline", group: 0, id: 0 });
+ * updateBinding(resource);
+ * ```
+ */
 export function createBinding(props: BindingId) {
   const context = useContext(GPUWorkQueueContext);
 
