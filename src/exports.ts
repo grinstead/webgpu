@@ -3,3 +3,5 @@
  */
 
 export * from "./GPUContainer.tsx";
+export * from "./GPUWorkQueue.tsx";
+export * from "./Canvas.tsx";
