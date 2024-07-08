@@ -3,6 +3,7 @@ import {
   JSXElement,
   createComputed,
   createContext,
+  createMemo,
   createRenderEffect,
   onCleanup,
   useContext,
@@ -10,18 +11,17 @@ import {
 import { GPUContext, GPUDetails } from "./GPUContainer.tsx";
 
 export type PipelineId = string | undefined;
+export type BindingId = {
+  pipeline?: PipelineId;
+  group: number;
+  id: GPUIndex32;
+};
 
 export type GPUWork = (encoder: GPUCommandEncoder) => void;
 export type UpdateWork = (update: null | GPUWork, everyFrame?: boolean) => void;
+export type UpdateBinding = (resource: null | GPUBindingResource) => void;
 
-export const GPUWorkQueueContext = createContext<{
-  reserveSlot: () => UpdateWork;
-  binding: (
-    pipeline: PipelineId,
-    group: number,
-    id: GPUIndex32
-  ) => (resource: null | GPUBindingResource) => void;
-}>();
+export const GPUWorkQueueContext = createContext<GPUWorkQueue>();
 
 type GPUWorkWrapper = {
   id: number;
@@ -68,13 +68,7 @@ export class GPUWorkQueue {
     });
 
     return (
-      <GPUWorkQueueContext.Provider
-        value={{
-          reserveSlot: () => manager.reserveSlot(),
-          binding: (pipeline, group, id) =>
-            manager.makeBinding(pipeline, group, id),
-        }}
-      >
+      <GPUWorkQueueContext.Provider value={manager}>
         {props.children}
       </GPUWorkQueueContext.Provider>
     );
@@ -244,5 +238,14 @@ export function createGPUWrite(code: Accessor<GPUWork>) {
 
   onCleanup(() => {
     update(null);
+  });
+}
+
+export function createBinding(props: BindingId) {
+  const context = useContext(GPUWorkQueueContext);
+
+  return createMemo<UpdateBinding>((prev) => {
+    prev?.(null);
+    return context!.makeBinding(props.pipeline, props.group, props.id);
   });
 }
