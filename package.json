@@ -1,6 +1,6 @@
 {
   "name": "@grinstead/webgpu",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "license": "LGPL-2.1-only",
   "homepage": "https://github.com/grinstead/webgpu#readme",
   "repository": {
