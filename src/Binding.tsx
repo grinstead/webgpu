@@ -2,6 +2,7 @@ import { createMemo, createRenderEffect, useContext } from "solid-js";
 import { BindingId, createBinding, createGPUWrite } from "./GPUWorkQueue.tsx";
 import { UNIFORM_ALIGNMENT, WebGPUScalar } from "./webgpu_types.ts";
 import { GPUContext } from "./GPUContainer.tsx";
+import { roundUpToMultiple } from "./utils.ts";
 /**
  * Props for the ScalarBinding component.
  */
@@ -254,6 +255,80 @@ export function VectorBinding(props: VectorBindingProps): undefined {
       }
 
       device.queue.writeBuffer(buffer, 0, bytes);
+    };
+  });
+}
+
+/**
+ * Props for the BufferBinding component.
+ */
+export type BufferBindingProps = BindingId & {
+  /** Optional label for the buffer. */
+  label?: string;
+  /**
+   * The usage, defaults to GPUBufferUsage.UNIFORM. It is not necessary to
+   * include GPUBufferUsage.COPY_DST, that flag will always be injected in.
+   */
+  usage?: GPUBufferUsageFlags;
+  /** The ArrayBufferView to bind. */
+  value: ArrayBufferView;
+};
+
+/**
+ * BufferBinding component binds an ArrayBufferView to a uniform in the shader.
+ * @param props - The properties for the BufferBinding component.
+ * @returns undefined
+ *
+ * @example
+ * ```typescript
+ * import { BufferBinding } from "@grinstead/webgpu";
+ *
+ * export function ExampleBufferBinding() {
+ *   return (
+ *     <BufferBinding
+ *       pipeline="examplePipeline"
+ *       group={0}
+ *       id={0}
+ *       label="Example Buffer"
+ *       usage={GPUBufferUsage.UNIFORM | GPUBufferUsage.VERTEX}
+ *       value={new Float32Array([0, 1, 2, 3])}
+ *     />
+ *   );
+ * }
+ * ```
+ */
+export function BufferBinding(props: BufferBindingProps): undefined {
+  const { device } = useContext(GPUContext);
+  const binding = createBinding(props);
+
+  const getSize = createMemo(() =>
+    roundUpToMultiple(props.value.byteLength, UNIFORM_ALIGNMENT)
+  );
+
+  const getBuffer = createMemo(() =>
+    device.createBuffer({
+      label: props.label,
+      usage: (props.usage ?? GPUBufferUsage.UNIFORM) | GPUBufferUsage.COPY_DST,
+      size: getSize(),
+    })
+  );
+
+  createRenderEffect(() => {
+    binding()({ buffer: getBuffer() });
+  });
+
+  createGPUWrite(() => {
+    const { value } = props;
+    const buffer = getBuffer();
+
+    return () => {
+      device.queue.writeBuffer(
+        buffer,
+        0,
+        value.buffer,
+        value.byteOffset,
+        value.byteLength
+      );
     };
   });
 }
