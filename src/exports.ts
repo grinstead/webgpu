@@ -8,3 +8,5 @@ export * from "./solid/Canvas.tsx";
 export * from "./solid/Binding.tsx";
 export * from "./solid/RenderPipeline.tsx";
 export * from "./wgsl/webgpu_types.ts";
+export * from "./wgsl/wgsl.ts";
+export * from "./wgsl/bindings.ts";
