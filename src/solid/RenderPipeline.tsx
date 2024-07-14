@@ -25,11 +25,11 @@ export type RenderPipelineProps = {
   /**
    * The entry point for the vertex shader.
    */
-  vertexMain: string;
+  vertexMain?: string;
   /**
    * The entry point for the fragment shader.
    */
-  fragmentMain: string;
+  fragmentMain?: string;
   /**
    * The number of vertices to draw or a function to handle custom drawing.
    */
