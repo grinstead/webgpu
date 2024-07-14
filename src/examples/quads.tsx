@@ -1,6 +1,6 @@
-import { RenderPipeline } from "../RenderPipeline.tsx";
-import { Canvas } from "../Canvas.tsx";
-import { ScalarBinding } from "../Binding.tsx";
+import { RenderPipeline } from "../solid/RenderPipeline.tsx";
+import { Canvas } from "../solid/Canvas.tsx";
+import { ScalarBinding } from "../solid/Binding.tsx";
 import { createSignal } from "solid-js";
 
 export function Quads() {

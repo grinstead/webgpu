@@ -1,6 +1,6 @@
 /* @refresh reload */
 import { ErrorBoundary, render } from "solid-js/web";
-import Example from "./examples/quads.tsx";
+import Example from "./quads.tsx";
 
 const root = document.getElementById("root");
 

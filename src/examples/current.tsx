@@ -1,6 +1,6 @@
 import { ErrorBoundary } from "solid-js";
-import { GPUContainer } from "../GPUContainer.tsx";
-import { GPUWorkQueue } from "../GPUWorkQueue.tsx";
+import { GPUContainer } from "../solid/GPUContainer.tsx";
+import { GPUWorkQueue } from "../solid/GPUWorkQueue.tsx";
 
 export function Playground() {
   const canvas = (<canvas width={320} height={240} />) as HTMLCanvasElement;

@@ -2,9 +2,9 @@
  * @file This file contains all the exports for our library
  */
 
-export * from "./GPUContainer.tsx";
-export * from "./GPUWorkQueue.tsx";
-export * from "./Canvas.tsx";
-export * from "./Binding.tsx";
-export * from "./RenderPipeline.tsx";
-export * from "./webgpu_types.ts";
+export * from "./solid/GPUContainer.tsx";
+export * from "./solid/GPUWorkQueue.tsx";
+export * from "./solid/Canvas.tsx";
+export * from "./solid/Binding.tsx";
+export * from "./solid/RenderPipeline.tsx";
+export * from "./wgsl/webgpu_types.ts";

@@ -1,8 +1,8 @@
 import { createMemo, createRenderEffect, useContext } from "solid-js";
 import { BindingId, createBinding, createGPUWrite } from "./GPUWorkQueue.tsx";
-import { UNIFORM_ALIGNMENT, WebGPUScalar } from "./webgpu_types.ts";
+import { UNIFORM_ALIGNMENT, WebGPUScalar } from "../wgsl/webgpu_types.ts";
 import { GPUContext } from "./GPUContainer.tsx";
-import { roundUpToMultiple } from "./utils.ts";
+import { roundUpToMultiple } from "../utils.ts";
 /**
  * Props for the ScalarBinding component.
  */
